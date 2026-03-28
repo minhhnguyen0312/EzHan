@@ -1,5 +1,5 @@
 {
-  "name": "ezhan-temp",
+  "name": "ezhan",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,18 +9,34 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@auth/prisma-adapter": "^2.11.1",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "@tanstack/react-query": "^5.90.21",
+    "@uploadthing/react": "^7.3.3",
+    "clsx": "^2.1.1",
     "next": "16.1.6",
+    "next-auth": "^5.0.0-beta.30",
+    "pg": "^8.20.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.5.0",
+    "uploadthing": "^7.7.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "prisma": "^6.19.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
