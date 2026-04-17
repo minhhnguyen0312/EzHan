@@ -5,7 +5,9 @@ import { SignJWT, jwtVerify } from "jose"
 import { db } from "@/lib/db"
 import type { User } from "@prisma/client"
 
-const COOKIE_NAME = "ezhan_session"
+import { SESSION_COOKIE_NAME } from "@/lib/session-edge"
+
+const COOKIE_NAME = SESSION_COOKIE_NAME
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days
 
 function getSecret(): Uint8Array {
@@ -100,20 +102,4 @@ export class UnauthorizedError extends Error {
   }
 }
 
-/**
- * Edge-safe version of getSession() that only verifies the JWT; used by middleware
- * where we don't want to hit the DB. Returns the userId or null.
- */
-export async function verifySessionCookie(
-  token: string | undefined,
-): Promise<string | null> {
-  if (!token) return null
-  try {
-    const { payload } = await jwtVerify<SessionPayload>(token, getSecret())
-    return typeof payload.userId === "string" ? payload.userId : null
-  } catch {
-    return null
-  }
-}
-
-export { COOKIE_NAME as SESSION_COOKIE_NAME }
+export { verifySessionCookie, SESSION_COOKIE_NAME } from "@/lib/session-edge"

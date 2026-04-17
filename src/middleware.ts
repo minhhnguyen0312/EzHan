@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { verifySessionCookie, SESSION_COOKIE_NAME } from "@/lib/session"
+import { verifySessionCookie, SESSION_COOKIE_NAME } from "@/lib/session-edge"
 
 // Public routes accessible without a session.
 const PUBLIC_PATHS = ["/login", "/signup", "/offline"]
