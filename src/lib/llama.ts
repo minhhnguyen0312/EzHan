@@ -18,7 +18,14 @@ function getLlamaModel() {
 }
 
 export function isLocalLlmEnabled() {
-  return process.env.ENABLE_LOCAL_LLM !== "false"
+  // On Vercel / any production deployment, the local llama.cpp server is
+  // unreachable — always use Gemini there. Can be forced off anywhere with
+  // ENABLE_LOCAL_LLM=false, or forced on with ENABLE_LOCAL_LLM=true.
+  const flag = process.env.ENABLE_LOCAL_LLM
+  if (flag === "false") return false
+  if (flag === "true") return true
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") return false
+  return true
 }
 
 function getAuthHeader(): Record<string, string> {
