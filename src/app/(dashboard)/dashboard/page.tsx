@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { getTodayTopic } from "@/services/topics.service"
 import { getTodayVocab } from "@/services/vocabulary.service"
 import { getUserProgress } from "@/services/progress.service"
@@ -12,13 +12,13 @@ import type { HskLevel } from "@prisma/client"
 import type { VocabularyWordData } from "@/types/vocabulary"
 
 export default async function DashboardPage() {
-  const session = await auth()
-  const hskLevel = (session?.user?.hskLevel ?? "HSK1") as HskLevel
+  const user = await getGuestUser()
+  const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
 
   const [topic, vocabSet, progress] = await Promise.all([
     getTodayTopic(hskLevel).catch(() => null),
-    getTodayVocab(hskLevel, session?.user?.vocabCount ?? 10).catch(() => null),
-    getUserProgress(session?.user?.id ?? ""),
+    getTodayVocab(hskLevel, user.vocabCount ?? 10).catch(() => null),
+    getUserProgress(user.id),
   ])
 
   const previewWords = (vocabSet?.words?.slice(0, 3) ?? []) as unknown as VocabularyWordData[]

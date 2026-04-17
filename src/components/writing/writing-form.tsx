@@ -26,12 +26,33 @@ export function WritingForm({ topicId, suggestedLength, hint }: WritingFormProps
   const [text, setText] = useState("")
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingHint, setLoadingHint] = useState(false)
+  const [aiHint, setAiHint] = useState<string | null>(null)
   const [hintOpen, setHintOpen] = useState(false)
   const [feedback, setFeedback] = useState<WritingFeedback | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const charCount = text.length
+
+  async function getAiHint() {
+    setLoadingHint(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/writing/hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Failed to get hint")
+      setAiHint(data.hint)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to get AI hint")
+    } finally {
+      setLoadingHint(false)
+    }
+  }
 
   async function handleSubmit() {
     setError(null)
@@ -110,7 +131,7 @@ export function WritingForm({ topicId, suggestedLength, hint }: WritingFormProps
           >
             <span className="flex items-center gap-2 text-sm font-medium text-amber-800">
               <span>💡</span>
-              <span>Hint — {hint.titleEn}</span>
+              <span>Topic Details — {hint.titleEn}</span>
             </span>
             <span className="text-amber-600 text-xs">{hintOpen ? "▲ hide" : "▼ show"}</span>
           </button>
@@ -124,6 +145,35 @@ export function WritingForm({ topicId, suggestedLength, hint }: WritingFormProps
           )}
         </div>
       )}
+
+      {/* AI Hint Section */}
+      <div className="space-y-3">
+        {!aiHint ? (
+          <button
+            type="button"
+            onClick={getAiHint}
+            disabled={loadingHint}
+            className="text-xs font-medium text-red-600 hover:text-red-700 flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
+          >
+            {loadingHint ? "✨ Generating..." : "✨ Get AI Writing Ideas"}
+          </button>
+        ) : (
+          <div className="rounded-xl border border-red-100 bg-white p-4 space-y-2 shadow-sm">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-bold text-red-600 uppercase tracking-wider">AI Writing Ideas</span>
+              <button 
+                onClick={() => setAiHint(null)}
+                className="text-[10px] text-gray-400 hover:text-gray-600"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed" style={{ fontFamily: '"Noto Sans SC", sans-serif' }}>
+              {aiHint}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Text Mode */}
       {mode === "text" && (

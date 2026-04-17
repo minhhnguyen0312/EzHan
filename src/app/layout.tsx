@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Noto_Sans_SC, Inter } from "next/font/google"
 import "./globals.css"
-import { SessionProvider } from "@/components/providers/session-provider"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { ServiceWorkerRegister } from "@/components/providers/sw-register"
 
@@ -44,9 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${inter.variable} ${notoSansSC.variable} font-sans antialiased bg-gray-50`}>
         <ServiceWorkerRegister />
-        <SessionProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </SessionProvider>
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   )

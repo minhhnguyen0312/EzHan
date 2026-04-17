@@ -1,4 +1,4 @@
-import { gemini, GEMINI_MODEL } from "@/lib/gemini"
+import { llamaChat, parseJsonResponse } from "@/lib/llama"
 import { z } from "zod"
 
 const topicOutputSchema = z.object({
@@ -52,15 +52,13 @@ Respond with JSON in exactly this schema:
   "suggestedLength": "string (e.g. '50-100个字' for HSK1)"
 }`
 
-  const model = gemini.getGenerativeModel({
-    model: GEMINI_MODEL,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
+  const text = await llamaChat({
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.2,
+    maxTokens: 900,
+    responseFormat: { type: "json_object" },
   })
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text()
-  const parsed = JSON.parse(text)
+  const parsed = parseJsonResponse(text)
   return topicOutputSchema.parse(parsed)
 }

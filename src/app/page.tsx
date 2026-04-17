@@ -45,7 +45,7 @@ export default function LandingPage() {
           <h1 className="text-2xl font-bold text-red-600">易汉</h1>
           <p className="text-xs text-gray-500">EzHan</p>
         </div>
-        <Link href="/login">
+        <Link href="/dashboard">
           <Button variant="primary" size="sm">Start Learning</Button>
         </Link>
       </header>
@@ -66,7 +66,7 @@ export default function LandingPage() {
           Write in Chinese every day. Get instant feedback from Claude AI. Build your vocabulary
           with graduated examples. Track your streak and progress.
         </p>
-        <Link href="/login">
+        <Link href="/dashboard">
           <Button size="lg" className="text-base px-8">Start for free →</Button>
         </Link>
 

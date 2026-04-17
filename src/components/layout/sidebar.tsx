@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils/cn"
 import { getHskMeta } from "@/lib/utils/hsk"
 
@@ -73,14 +72,9 @@ export function Sidebar({ hskLevel, userName, userImage }: SidebarProps) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{userName ?? "Learner"}</p>
+            <p className="text-xs text-gray-400">Guest mode</p>
           </div>
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="w-full text-left text-xs text-gray-500 hover:text-gray-700 px-1"
-        >
-          Sign out →
-        </button>
       </div>
     </aside>
   )

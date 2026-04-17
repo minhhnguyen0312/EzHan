@@ -1,12 +1,12 @@
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { getUserProgress } from "@/services/progress.service"
 import { StatsGrid } from "@/components/progress/stats-grid"
 import { LevelBadge } from "@/components/progress/level-badge"
 import { Card, CardContent } from "@/components/ui/card"
 
 export default async function ProgressPage() {
-  const session = await auth()
-  const progress = await getUserProgress(session?.user?.id ?? "")
+  const user = await getGuestUser()
+  const progress = await getUserProgress(user.id)
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -16,7 +16,7 @@ export default async function ProgressPage() {
       <Card>
         <CardContent className="p-6">
           <h2 className="text-sm font-medium text-gray-500 mb-3">Current Level</h2>
-          <LevelBadge level={session?.user?.hskLevel ?? "HSK1"} showDescription />
+          <LevelBadge level={user.hskLevel ?? "HSK1"} showDescription />
         </CardContent>
       </Card>
 

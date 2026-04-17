@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { addMoreVocab } from "@/services/vocabulary.service"
 import type { HskLevel } from "@prisma/client"
 
 export async function POST() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
   try {
-    const vocabSet = await addMoreVocab(session.user.hskLevel as HskLevel, 5)
+    const vocabSet = await addMoreVocab(user.hskLevel as HskLevel, 5)
     return NextResponse.json(vocabSet)
   } catch (error) {
     console.error("Failed to add more vocab:", error)

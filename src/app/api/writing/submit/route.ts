@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { submitWriting } from "@/services/writing.service"
 import { submitWritingSchema } from "@/lib/validations/writing"
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
   try {
     const body = await req.json()
@@ -17,12 +14,12 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await submitWriting({
-      userId: session.user.id,
+      userId: user.id,
       topicId: parsed.data.topicId,
       submissionType: parsed.data.submissionType,
       contentText: parsed.data.contentText,
       imageUrl: parsed.data.imageUrl,
-      hskLevel: session.user.hskLevel,
+      hskLevel: user.hskLevel,
     })
 
     if (result.alreadyExists) {

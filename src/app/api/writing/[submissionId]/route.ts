@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { getSubmission } from "@/services/writing.service"
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
   const { submissionId } = await params
-  const submission = await getSubmission(submissionId, session.user.id)
+  const submission = await getSubmission(submissionId, user.id)
 
   if (!submission) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })

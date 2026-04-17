@@ -1,4 +1,4 @@
-import { gemini, GEMINI_MODEL } from "@/lib/gemini"
+import { llamaChat, parseJsonResponse } from "@/lib/llama"
 import { z } from "zod"
 
 const sentenceSchema = z.object({
@@ -71,19 +71,16 @@ Respond with JSON in exactly this schema:
   ]
 }`
 
-  const model = gemini.getGenerativeModel({
-    model: GEMINI_MODEL,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
+  const text = await llamaChat({
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.2,
+    maxTokens: 3000,
+    responseFormat: { type: "json_object" },
   })
-
-  const result = await model.generateContent(prompt)
-  const text = result.response.text()
 
   let parsed: unknown
   try {
-    parsed = JSON.parse(text)
+    parsed = parseJsonResponse(text)
   } catch (e) {
     console.error("Vocab JSON parse failed. Raw response:", text)
     throw new Error(`JSON parse error: ${e}`)

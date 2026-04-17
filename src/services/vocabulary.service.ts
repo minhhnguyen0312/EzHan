@@ -32,8 +32,10 @@ export async function generateAndSaveVocab(
 
   const words = await generateDailyVocab(hskLevel, count, date, recentWords)
 
-  return db.dailyVocabularySet.create({
-    data: {
+  return db.dailyVocabularySet.upsert({
+    where: { date_hskLevel: { date, hskLevel } },
+    update: {}, // If it exists, just return it (or we could update words, but usually we just want to avoid the error)
+    create: {
       date,
       hskLevel,
       words: {

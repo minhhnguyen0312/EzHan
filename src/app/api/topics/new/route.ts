@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { refreshTodayTopic } from "@/services/topics.service"
 import type { HskLevel } from "@prisma/client"
 
 export async function POST() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
   try {
-    const topic = await refreshTodayTopic(session.user.hskLevel as HskLevel, session.user.id)
+    const topic = await refreshTodayTopic(user.hskLevel as HskLevel, user.id)
     return NextResponse.json(topic)
   } catch (err) {
     console.error("Failed to refresh topic:", err)

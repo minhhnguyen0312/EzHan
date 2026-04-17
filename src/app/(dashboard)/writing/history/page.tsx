@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { getUserSubmissions } from "@/services/writing.service"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +9,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default async function WritingHistoryPage() {
-  const session = await auth()
-  const submissions = await getUserSubmissions(session?.user?.id ?? "")
+  const user = await getGuestUser()
+  const submissions = await getUserSubmissions(user.id)
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

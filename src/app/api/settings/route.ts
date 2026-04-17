@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getGuestUser } from "@/lib/guest"
 import { db } from "@/lib/db"
 import { updateSettingsSchema } from "@/lib/validations/settings"
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
+  const settings = await db.user.findUnique({
+    where: { id: user.id },
     select: {
       id: true,
       name: true,
@@ -22,14 +19,11 @@ export async function GET() {
     },
   })
 
-  return NextResponse.json(user)
+  return NextResponse.json(settings)
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const user = await getGuestUser()
 
   try {
     const body = await req.json()
@@ -39,7 +33,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updated = await db.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: parsed.data,
       select: {
         id: true,

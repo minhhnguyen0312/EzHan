@@ -1,4 +1,4 @@
-import { gemini, GEMINI_MODEL } from "@/lib/gemini"
+import { llamaChat, parseJsonResponse } from "@/lib/llama"
 import { writingFeedbackSchema } from "@/lib/validations/writing"
 import type { WritingFeedback } from "@/types/writing"
 
@@ -40,7 +40,7 @@ const REVIEW_SCHEMA = `{
 }`
 
 export async function reviewWriting(input: ReviewInput): Promise<WritingFeedback> {
-  const { topic, userWriting, hskLevel, submissionType, imageUrl } = input
+  const { topic, userWriting, hskLevel, submissionType } = input
 
   const topicContext = `Today's writing topic: "${topic.titleEn}" (${topic.titleZh})
 Prompt: ${topic.promptZh}
@@ -52,41 +52,11 @@ Always respond with valid JSON matching the exact schema provided.
 Be specific, cite examples from the student's writing, and provide corrected versions.
 Keep feedback constructive and motivating — focus on growth, not just errors.`
 
-  const model = gemini.getGenerativeModel({
-    model: GEMINI_MODEL,
-    systemInstruction,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  })
+  if (submissionType === "IMAGE") {
+    throw new Error("Image submissions are not supported by the local model.")
+  }
 
-  let result
-  if (submissionType === "IMAGE" && imageUrl) {
-    const imageResp = await fetch(imageUrl)
-    const imageBuffer = await imageResp.arrayBuffer()
-    const imageBytes = Buffer.from(imageBuffer).toString("base64")
-    const contentType = imageResp.headers.get("content-type") ?? "image/jpeg"
-
-    result = await model.generateContent([
-      {
-        text: `${topicContext}
-
-Student's HSK level: ${hskLevel}
-
-The student's handwritten Chinese writing is shown in the image below. Please review it carefully.
-
-Review this Chinese writing submission and respond with JSON in exactly this schema:
-${REVIEW_SCHEMA}`,
-      },
-      {
-        inlineData: {
-          mimeType: contentType as "image/jpeg" | "image/png" | "image/webp",
-          data: imageBytes,
-        },
-      },
-    ])
-  } else {
-    result = await model.generateContent(`${topicContext}
+  const userPrompt = `${topicContext}
 
 Student's HSK level: ${hskLevel}
 Student's writing:
@@ -95,10 +65,18 @@ ${userWriting}
 ---
 
 Review this Chinese writing submission and respond with JSON in exactly this schema:
-${REVIEW_SCHEMA}`)
-  }
+${REVIEW_SCHEMA}`
 
-  const text = result.response.text()
-  const parsed = JSON.parse(text)
+  const text = await llamaChat({
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: userPrompt },
+    ],
+    temperature: 0.2,
+    maxTokens: 1400,
+    responseFormat: { type: "json_object" },
+  })
+
+  const parsed = parseJsonResponse(text)
   return writingFeedbackSchema.parse(parsed)
 }
