@@ -3,6 +3,10 @@ import { getGuestUser } from "@/lib/guest"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileNav } from "@/components/layout/mobile-nav"
 
+// Dashboard pages all depend on the authenticated user and DB, so they
+// must render per-request rather than being prerendered at build time.
+export const dynamic = "force-dynamic"
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getGuestUser()
 
