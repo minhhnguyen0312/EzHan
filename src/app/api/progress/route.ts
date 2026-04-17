@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
-import { getGuestUser } from "@/lib/guest"
+import { getCurrentUser } from "@/lib/session"
 import { getUserProgress } from "@/services/progress.service"
 
 export async function GET() {
-  const user = await getGuestUser()
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const progress = await getUserProgress(user.id)
   return NextResponse.json(progress)
 }

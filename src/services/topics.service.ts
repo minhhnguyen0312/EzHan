@@ -3,7 +3,7 @@ import { generateDailyTopic } from "@/services/claude/topic-generation"
 import { todayKey } from "@/lib/utils/date"
 import type { HskLevel } from "@prisma/client"
 
-export async function getTodayTopic(hskLevel: HskLevel) {
+export async function getTodayTopic(hskLevel: HskLevel, userKey?: string) {
   const date = todayKey()
 
   const existing = await db.dailyTopic.findUnique({
@@ -12,10 +12,10 @@ export async function getTodayTopic(hskLevel: HskLevel) {
   if (existing) return existing
 
   // On-demand generation fallback
-  return generateAndSaveTopic(hskLevel, date)
+  return generateAndSaveTopic(hskLevel, date, userKey)
 }
 
-export async function generateAndSaveTopic(hskLevel: HskLevel, date: string) {
+export async function generateAndSaveTopic(hskLevel: HskLevel, date: string, userKey?: string) {
   const recent = await db.dailyTopic.findMany({
     where: { hskLevel },
     orderBy: { createdAt: "desc" },
@@ -24,7 +24,7 @@ export async function generateAndSaveTopic(hskLevel: HskLevel, date: string) {
   })
   const recentTitles = recent.map((t) => t.titleEn)
 
-  const generated = await generateDailyTopic(hskLevel, date, recentTitles)
+  const generated = await generateDailyTopic(hskLevel, date, recentTitles, userKey)
 
   return db.dailyTopic.upsert({
     where: { date_hskLevel: { date, hskLevel } },
@@ -46,7 +46,8 @@ export async function generateAndSaveTopic(hskLevel: HskLevel, date: string) {
  */
 export async function refreshTodayTopic(
   hskLevel: HskLevel,
-  userId: string
+  userId: string,
+  userKey?: string
 ): Promise<Awaited<ReturnType<typeof getTodayTopic>>> {
   const date = todayKey()
 
@@ -69,7 +70,7 @@ export async function refreshTodayTopic(
   })
   const recentTitles = recent.map((t) => t.titleEn)
 
-  const generated = await generateDailyTopic(hskLevel, targetDate, recentTitles)
+  const generated = await generateDailyTopic(hskLevel, targetDate, recentTitles, userKey)
 
   return db.dailyTopic.upsert({
     where: { date_hskLevel: { date: targetDate, hskLevel } },

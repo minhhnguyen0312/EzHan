@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getUserSubmissions } from "@/services/writing.service"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +9,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default async function WritingHistoryPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const submissions = await getUserSubmissions(user.id)
 
   return (

@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getTodayTopic, getTodayBonusTopic } from "@/services/topics.service"
 import { TopicCard } from "@/components/writing/topic-card"
 import { WritingForm } from "@/components/writing/writing-form"
@@ -11,7 +11,7 @@ import { FeedbackPanel } from "@/components/writing/feedback-panel"
 import type { WritingFeedback } from "@/types/writing"
 
 export default async function WritingPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
   const userId = user.id
 

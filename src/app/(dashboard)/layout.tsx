@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileNav } from "@/components/layout/mobile-nav"
 
@@ -8,7 +8,7 @@ import { MobileNav } from "@/components/layout/mobile-nav"
 export const dynamic = "force-dynamic"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
 
   if (!user.onboardingComplete) {
     redirect("/onboarding")

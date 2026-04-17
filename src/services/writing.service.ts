@@ -5,8 +5,9 @@ import { llamaChat } from "@/lib/llama"
 export async function generateWritingHint(params: {
   topicId: string
   hskLevel: string
+  userKey?: string
 }) {
-  const { topicId, hskLevel } = params
+  const { topicId, hskLevel, userKey } = params
 
   const topic = await db.dailyTopic.findUnique({ where: { id: topicId } })
   if (!topic) throw new Error("Topic not found")
@@ -33,6 +34,7 @@ Format:
     ],
     temperature: 0.7,
     maxTokens: 500,
+    apiKey: userKey,
   })
 
   return hint
@@ -45,8 +47,9 @@ export async function submitWriting(params: {
   contentText?: string
   imageUrl?: string
   hskLevel: string
+  userKey?: string
 }) {
-  const { userId, topicId, submissionType, contentText, imageUrl, hskLevel } = params
+  const { userId, topicId, submissionType, contentText, imageUrl, hskLevel, userKey } = params
 
   // Check for existing submission
   const existing = await db.writingSubmission.findUnique({
@@ -82,6 +85,7 @@ export async function submitWriting(params: {
       hskLevel,
       submissionType,
       imageUrl,
+      userKey,
     })
 
     const updated = await db.writingSubmission.update({

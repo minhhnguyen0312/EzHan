@@ -14,6 +14,8 @@ interface UserSettings {
   image: string | null
   hskLevel: string
   vocabCount: number
+  hasGeminiApiKey: boolean
+  geminiApiKeyPreview: string | null
 }
 
 export default function SettingsPage() {
@@ -22,12 +24,20 @@ export default function SettingsPage() {
   const [vocabCount, setVocabCount] = useState(10)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  // Gemini key state
+  const [geminiKeyInput, setGeminiKeyInput] = useState("")
+  const [showKeyInput, setShowKeyInput] = useState(false)
+  const [keySaving, setKeySaving] = useState(false)
+  const [keyError, setKeyError] = useState<string | null>(null)
+  const [keySuccess, setKeySuccess] = useState<string | null>(null)
+
   const router = useRouter()
 
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
-      .then((data) => {
+      .then((data: UserSettings) => {
         setSettings(data)
         setHskLevel(data.hskLevel)
         setVocabCount(data.vocabCount)
@@ -45,6 +55,48 @@ export default function SettingsPage() {
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     router.refresh()
+  }
+
+  async function handleSaveGeminiKey() {
+    setKeyError(null)
+    setKeySuccess(null)
+    if (!geminiKeyInput.trim()) return
+    setKeySaving(true)
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ geminiApiKey: geminiKeyInput.trim() }),
+    })
+    const data = await res.json()
+    setKeySaving(false)
+    if (!res.ok) {
+      const msg = data?.error?.fieldErrors?.geminiApiKey?.[0] ?? data?.error ?? "Invalid key"
+      setKeyError(typeof msg === "string" ? msg : "Invalid Gemini API key format")
+    } else {
+      setSettings((s) => s ? { ...s, hasGeminiApiKey: data.hasGeminiApiKey, geminiApiKeyPreview: data.geminiApiKeyPreview } : s)
+      setGeminiKeyInput("")
+      setShowKeyInput(false)
+      setKeySuccess("Key saved and encrypted successfully.")
+      setTimeout(() => setKeySuccess(null), 4000)
+    }
+  }
+
+  async function handleRemoveGeminiKey() {
+    setKeyError(null)
+    setKeySuccess(null)
+    setKeySaving(true)
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ geminiApiKey: null }),
+    })
+    const data = await res.json()
+    setKeySaving(false)
+    if (res.ok) {
+      setSettings((s) => s ? { ...s, hasGeminiApiKey: data.hasGeminiApiKey, geminiApiKeyPreview: null } : s)
+      setKeySuccess("Key removed. Using shared server key.")
+      setTimeout(() => setKeySuccess(null), 4000)
+    }
   }
 
   if (!settings) {
@@ -137,6 +189,109 @@ export default function SettingsPage() {
       >
         {saved ? "✓ Saved!" : "Save changes"}
       </Button>
+
+      {/* Gemini API Key */}
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-medium text-gray-900">Gemini API Key</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Optional. Bring your own key to use your Gemini quota for AI features.
+              </p>
+            </div>
+            <span className={cn(
+              "shrink-0 text-xs font-medium px-2 py-1 rounded-full",
+              settings.hasGeminiApiKey
+                ? "bg-green-50 text-green-700"
+                : "bg-gray-100 text-gray-500"
+            )}>
+              {settings.hasGeminiApiKey ? "Using your key" : "Using shared key"}
+            </span>
+          </div>
+
+          {settings.hasGeminiApiKey && !showKeyInput && (
+            <div className="flex items-center gap-3">
+              <code className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded font-mono">
+                {settings.geminiApiKeyPreview}
+              </code>
+              <button
+                type="button"
+                onClick={() => setShowKeyInput(true)}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Replace
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveGeminiKey}
+                disabled={keySaving}
+                className="text-xs text-red-500 hover:underline disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
+          {(!settings.hasGeminiApiKey || showKeyInput) && (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={geminiKeyInput}
+                  onChange={(e) => { setGeminiKeyInput(e.target.value); setKeyError(null) }}
+                  placeholder="AIza…"
+                  autoComplete="off"
+                  className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+                <Button
+                  onClick={handleSaveGeminiKey}
+                  loading={keySaving}
+                  disabled={!geminiKeyInput.trim()}
+                  size="sm"
+                >
+                  Save
+                </Button>
+                {showKeyInput && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setShowKeyInput(false); setGeminiKeyInput(""); setKeyError(null) }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-400">
+                Get your free key at{" "}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  aistudio.google.com
+                </a>
+              </p>
+
+              {keyError && (
+                <p className="text-xs text-red-600">{keyError}</p>
+              )}
+
+              <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+                🔒 Your key is encrypted at rest with AES-256-GCM on our server and only
+                decrypted in-memory when making a request on your behalf. We never log it,
+                never show it back to you, and never send it anywhere except Google&apos;s Gemini API.
+              </p>
+            </div>
+          )}
+
+          {keySuccess && (
+            <p className="text-xs text-green-600">{keySuccess}</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

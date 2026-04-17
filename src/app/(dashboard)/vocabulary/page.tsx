@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getTodayVocab } from "@/services/vocabulary.service"
 import { VocabSet } from "@/components/vocabulary/vocab-set"
 import { MoreVocabButton } from "@/components/vocabulary/more-vocab-button"
@@ -8,7 +8,7 @@ import type { HskLevel } from "@prisma/client"
 import type { DailyVocabSetData } from "@/types/vocabulary"
 
 export default async function VocabularyPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
   const vocabCount = user.vocabCount ?? 10
 

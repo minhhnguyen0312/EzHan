@@ -3,7 +3,7 @@ import { generateDailyVocab } from "@/services/claude/vocab-generation"
 import { todayKey } from "@/lib/utils/date"
 import type { HskLevel } from "@prisma/client"
 
-export async function getTodayVocab(hskLevel: HskLevel, vocabCount = 10) {
+export async function getTodayVocab(hskLevel: HskLevel, vocabCount = 10, userKey?: string) {
   const date = todayKey()
 
   const existing = await db.dailyVocabularySet.findUnique({
@@ -13,13 +13,14 @@ export async function getTodayVocab(hskLevel: HskLevel, vocabCount = 10) {
   if (existing) return existing
 
   // On-demand fallback
-  return generateAndSaveVocab(hskLevel, date, vocabCount)
+  return generateAndSaveVocab(hskLevel, date, vocabCount, userKey)
 }
 
 export async function generateAndSaveVocab(
   hskLevel: HskLevel,
   date: string,
-  count = 10
+  count = 10,
+  userKey?: string
 ) {
   // Fetch recent words to avoid repetition
   const recentSets = await db.dailyVocabularySet.findMany({
@@ -30,7 +31,7 @@ export async function generateAndSaveVocab(
   })
   const recentWords = recentSets.flatMap((s) => s.words.map((w) => w.hanzi))
 
-  const words = await generateDailyVocab(hskLevel, count, date, recentWords)
+  const words = await generateDailyVocab(hskLevel, count, date, recentWords, userKey)
 
   return db.dailyVocabularySet.upsert({
     where: { date_hskLevel: { date, hskLevel } },
@@ -57,7 +58,7 @@ export async function generateAndSaveVocab(
  * Append more words to today's existing vocabulary set.
  * Excludes all words already in today's set and recent days to avoid repeats.
  */
-export async function addMoreVocab(hskLevel: HskLevel, count = 5) {
+export async function addMoreVocab(hskLevel: HskLevel, count = 5, userKey?: string) {
   const date = todayKey()
 
   const existingSet = await db.dailyVocabularySet.findUnique({
@@ -66,7 +67,7 @@ export async function addMoreVocab(hskLevel: HskLevel, count = 5) {
   })
 
   // No set yet — just do the normal generation
-  if (!existingSet) return getTodayVocab(hskLevel, count)
+  if (!existingSet) return getTodayVocab(hskLevel, count, userKey)
 
   const existingHanzi = existingSet.words.map((w) => w.hanzi)
 
@@ -81,7 +82,7 @@ export async function addMoreVocab(hskLevel: HskLevel, count = 5) {
     ...recentSets.flatMap((s) => s.words.map((w) => w.hanzi)),
   ]
 
-  const newWords = await generateDailyVocab(hskLevel, count, date, excludeWords)
+  const newWords = await generateDailyVocab(hskLevel, count, date, excludeWords, userKey)
 
   const lastPosition = existingSet.words.at(-1)?.position ?? 0
 

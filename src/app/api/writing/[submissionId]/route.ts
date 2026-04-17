@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getGuestUser } from "@/lib/guest"
+import { getCurrentUser } from "@/lib/session"
 import { getSubmission } from "@/services/writing.service"
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
-  const user = await getGuestUser()
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { submissionId } = await params
   const submission = await getSubmission(submissionId, user.id)

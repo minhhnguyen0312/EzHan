@@ -1,11 +1,11 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getUserProgress } from "@/services/progress.service"
 import { StatsGrid } from "@/components/progress/stats-grid"
 import { LevelBadge } from "@/components/progress/level-badge"
 import { Card, CardContent } from "@/components/ui/card"
 
 export default async function ProgressPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const progress = await getUserProgress(user.id)
 
   return (

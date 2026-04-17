@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getVocabHistory } from "@/services/vocabulary.service"
 import { VocabSet } from "@/components/vocabulary/vocab-set"
 import Link from "next/link"
@@ -7,7 +7,7 @@ import type { HskLevel } from "@prisma/client"
 import type { DailyVocabSetData } from "@/types/vocabulary"
 
 export default async function VocabHistoryPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
 
   const history = await getVocabHistory(hskLevel)

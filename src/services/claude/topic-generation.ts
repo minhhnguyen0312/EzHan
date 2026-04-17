@@ -23,7 +23,8 @@ const HSK_LEVEL_CONTEXT: Record<string, string> = {
 export async function generateDailyTopic(
   hskLevel: string,
   date: string,
-  recentTopics: string[] = []
+  recentTopics: string[] = [],
+  userKey?: string
 ): Promise<TopicOutput> {
   const levelContext = HSK_LEVEL_CONTEXT[hskLevel] ?? HSK_LEVEL_CONTEXT["HSK1"]
 
@@ -57,6 +58,7 @@ Respond with JSON in exactly this schema:
     temperature: 0.2,
     maxTokens: 900,
     responseFormat: { type: "json_object" },
+    apiKey: userKey,
   })
 
   const parsed = parseJsonResponse(text)

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server"
-import { getGuestUser } from "@/lib/guest"
+import { getCurrentUser } from "@/lib/session"
 import { getTodayTopic } from "@/services/topics.service"
+import { tryDecrypt } from "@/lib/crypto"
 import type { HskLevel } from "@prisma/client"
 
 export async function GET() {
-  const user = await getGuestUser()
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   try {
-    const topic = await getTodayTopic(user.hskLevel as HskLevel)
+    const userKey = tryDecrypt(user.geminiApiKey) ?? undefined
+    const topic = await getTodayTopic(user.hskLevel as HskLevel, userKey)
     return NextResponse.json(topic)
   } catch (error) {
     console.error("Failed to get today's topic:", error)

@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getTodayTopic } from "@/services/topics.service"
 import { getTodayVocab } from "@/services/vocabulary.service"
 import { getUserProgress } from "@/services/progress.service"
@@ -12,7 +12,7 @@ import type { HskLevel } from "@prisma/client"
 import type { VocabularyWordData } from "@/types/vocabulary"
 
 export default async function DashboardPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
 
   const [topic, vocabSet, progress] = await Promise.all([

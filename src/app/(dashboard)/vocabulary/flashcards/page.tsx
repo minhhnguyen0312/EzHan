@@ -1,4 +1,4 @@
-import { getGuestUser } from "@/lib/guest"
+import { requireUserForPage } from "@/lib/session"
 import { getTodayVocab } from "@/services/vocabulary.service"
 import { FlashcardDeck } from "@/components/vocabulary/flashcard-deck"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,7 +8,7 @@ import type { HskLevel } from "@prisma/client"
 import type { DailyVocabSetData, VocabularyWordData } from "@/types/vocabulary"
 
 export default async function FlashcardsPage() {
-  const user = await getGuestUser()
+  const user = await requireUserForPage()
   const hskLevel = (user.hskLevel ?? "HSK1") as HskLevel
   const vocabCount = user.vocabCount ?? 10
 

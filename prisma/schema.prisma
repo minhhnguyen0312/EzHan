@@ -39,6 +39,7 @@ model User {
   hskLevel           HskLevel @default(HSK1)
   vocabCount         Int      @default(10)
   onboardingComplete Boolean  @default(false)
+  geminiApiKey       String?  @db.Text
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

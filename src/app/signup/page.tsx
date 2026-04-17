@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter()
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -16,14 +17,18 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ name, email }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.error ?? "Something went wrong")
+        const msg =
+          typeof data?.error === "string"
+            ? data.error
+            : "Couldn't create your account."
+        setError(msg)
         return
       }
       router.replace(data.onboardingComplete ? "/dashboard" : "/onboarding")
@@ -47,8 +52,21 @@ export default function LoginPage() {
         </div>
 
         <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-          Sign in
+          Create an account
         </h2>
+
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          Name
+        </label>
+        <input
+          type="text"
+          required
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
 
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
           Email
@@ -56,7 +74,6 @@ export default function LoginPage() {
         <input
           type="email"
           required
-          autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
@@ -70,13 +87,13 @@ export default function LoginPage() {
         )}
 
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? "Creating…" : "Create account"}
         </Button>
 
         <p className="text-sm text-center text-gray-500 mt-6">
-          No account?{" "}
-          <Link href="/signup" className="text-red-600 hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="text-red-600 hover:underline">
+            Sign in
           </Link>
         </p>
       </form>

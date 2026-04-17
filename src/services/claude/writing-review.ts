@@ -13,6 +13,7 @@ interface ReviewInput {
   hskLevel: string
   submissionType: "TEXT" | "IMAGE"
   imageUrl?: string
+  userKey?: string
 }
 
 const REVIEW_SCHEMA = `{
@@ -40,7 +41,7 @@ const REVIEW_SCHEMA = `{
 }`
 
 export async function reviewWriting(input: ReviewInput): Promise<WritingFeedback> {
-  const { topic, userWriting, hskLevel, submissionType } = input
+  const { topic, userWriting, hskLevel, submissionType, userKey } = input
 
   const topicContext = `Today's writing topic: "${topic.titleEn}" (${topic.titleZh})
 Prompt: ${topic.promptZh}
@@ -75,6 +76,7 @@ ${REVIEW_SCHEMA}`
     temperature: 0.2,
     maxTokens: 1400,
     responseFormat: { type: "json_object" },
+    apiKey: userKey,
   })
 
   const parsed = parseJsonResponse(text)

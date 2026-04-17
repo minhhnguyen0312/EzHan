@@ -72,9 +72,19 @@ export function Sidebar({ hskLevel, userName, userImage }: SidebarProps) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{userName ?? "Learner"}</p>
-            <p className="text-xs text-gray-400">Guest mode</p>
+            <p className="text-xs text-gray-400">Signed in</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" })
+            window.location.href = "/login"
+          }}
+          className="w-full text-left text-xs text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          Sign out
+        </button>
       </div>
     </aside>
   )

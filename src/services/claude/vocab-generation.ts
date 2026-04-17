@@ -35,7 +35,8 @@ export async function generateDailyVocab(
   hskLevel: string,
   count: number,
   date: string,
-  existingWords: string[] = []
+  existingWords: string[] = [],
+  userKey?: string
 ): Promise<GeneratedWord[]> {
   const sentenceGuide = HSK_SENTENCE_GUIDE[hskLevel] ?? HSK_SENTENCE_GUIDE["HSK1"]
 
@@ -76,6 +77,7 @@ Respond with JSON in exactly this schema:
     temperature: 0.2,
     maxTokens: 3000,
     responseFormat: { type: "json_object" },
+    apiKey: userKey,
   })
 
   let parsed: unknown

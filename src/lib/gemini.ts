@@ -1,23 +1,28 @@
 import { GoogleGenerativeAI, Part } from "@google/generative-ai"
 import type { LlamaMessage } from "./llama"
 
-const globalForGemini = globalThis as unknown as { gemini: GoogleGenerativeAI }
-
-export const gemini =
-  globalForGemini.gemini ??
-  new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
-if (process.env.NODE_ENV !== "production") globalForGemini.gemini = gemini
-
 export const GEMINI_MODEL = "gemini-2.5-flash-lite"
+
+function getClient(apiKey?: string): GoogleGenerativeAI {
+  const key = apiKey ?? process.env.GEMINI_API_KEY
+  if (!key) {
+    throw new Error(
+      "No Gemini API key available. Set GEMINI_API_KEY or pass a user-supplied key.",
+    )
+  }
+  return new GoogleGenerativeAI(key)
+}
 
 export async function geminiChat(params: {
   messages: LlamaMessage[]
   temperature?: number
   maxTokens?: number
   jsonMode?: boolean
+  /** Optional user-supplied Gemini API key. Falls back to process.env.GEMINI_API_KEY. */
+  apiKey?: string
 }): Promise<string> {
-  const model = gemini.getGenerativeModel({
+  const client = getClient(params.apiKey)
+  const model = client.getGenerativeModel({
     model: GEMINI_MODEL,
     generationConfig: {
       temperature: params.temperature ?? 0.2,

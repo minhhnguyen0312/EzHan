@@ -40,6 +40,8 @@ export async function llamaChat(params: {
   reasoning_effort?: "none" | "low" | "medium" | "high"
   responseFormat?: { type: "json_object" }
   stop?: string[]
+  /** Optional user-supplied Gemini API key used when falling back to Gemini. */
+  apiKey?: string
 }): Promise<string> {
   if (!isLocalLlmEnabled()) {
     return geminiChat({
@@ -47,6 +49,7 @@ export async function llamaChat(params: {
       temperature: params.temperature,
       maxTokens: params.maxTokens,
       jsonMode: params.responseFormat?.type === "json_object",
+      apiKey: params.apiKey,
     })
   }
 

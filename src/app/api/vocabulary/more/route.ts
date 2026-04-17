@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server"
-import { getGuestUser } from "@/lib/guest"
+import { getCurrentUser } from "@/lib/session"
 import { addMoreVocab } from "@/services/vocabulary.service"
+import { tryDecrypt } from "@/lib/crypto"
 import type { HskLevel } from "@prisma/client"
 
 export async function POST() {
-  const user = await getGuestUser()
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   try {
-    const vocabSet = await addMoreVocab(user.hskLevel as HskLevel, 5)
+    const userKey = tryDecrypt(user.geminiApiKey) ?? undefined
+    const vocabSet = await addMoreVocab(user.hskLevel as HskLevel, 5, userKey)
     return NextResponse.json(vocabSet)
   } catch (error) {
     console.error("Failed to add more vocab:", error)
