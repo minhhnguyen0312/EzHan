@@ -9,6 +9,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "⊞" },
   { href: "/writing", label: "Writing", icon: "✍" },
   { href: "/vocabulary", label: "Vocabulary", icon: "本" },
+  { href: "/audio", label: "Audio", icon: "声" },
   { href: "/progress", label: "Progress", icon: "↑" },
   { href: "/settings", label: "Settings", icon: "⚙" },
 ]

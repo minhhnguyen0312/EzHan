@@ -47,6 +47,7 @@ model User {
   sessions    Session[]
   submissions WritingSubmission[]
   progress    UserProgress?
+  audioGenerations AudioGeneration[]
 
   @@map("users")
 }
@@ -172,4 +173,23 @@ model UserProgress {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_progress")
+}
+
+model AudioGeneration {
+  id              String   @id @default(cuid())
+  userId          String
+  text            String   @db.Text
+  voiceName       String
+  voiceLabel      String
+  speed           String
+  mimeType        String   @default("audio/wav")
+  sampleRate      Int      @default(24000)
+  durationSeconds Int?
+  audioData       Bytes
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("audio_generations")
 }

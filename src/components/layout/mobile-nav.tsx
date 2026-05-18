@@ -8,6 +8,7 @@ const navItems = [
   { href: "/dashboard", label: "Home", icon: "⊞" },
   { href: "/writing", label: "Write", icon: "✍" },
   { href: "/vocabulary", label: "Vocab", icon: "本" },
+  { href: "/audio", label: "Audio", icon: "声" },
   { href: "/progress", label: "Progress", icon: "↑" },
 ]
 
