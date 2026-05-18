@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { db } from "@/lib/db"
 import { createSession } from "@/lib/session"
+import { assertAuthRuntimeConfig, getAuthDatabaseErrorMessage } from "@/lib/config"
 import { signupSchema } from "@/lib/validations/auth"
 
 export async function POST(req: NextRequest) {
@@ -21,6 +22,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    assertAuthRuntimeConfig()
+
     const user = await db.user.create({
       data: {
         name: parsed.data.name,
@@ -43,6 +46,13 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       )
     }
+
+    const configMessage = getAuthDatabaseErrorMessage(err)
+    if (configMessage) {
+      console.error("Signup configuration error:", err)
+      return NextResponse.json({ error: configMessage }, { status: 500 })
+    }
+
     console.error("Signup error:", err)
     return NextResponse.json(
       { error: "Failed to create account" },

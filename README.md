@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EzHan
 
-## Getting Started
+EzHan is a Next.js app for daily Chinese practice. Users pick an HSK level, get a daily writing prompt and vocabulary set, submit writing for AI feedback, and track streaks over time.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router
+- React 19
+- TypeScript
+- Prisma + PostgreSQL
+- Tailwind CSS
+- Uploadthing
+- Local LLM / Gemini fallback for AI generation
+
+## Local setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Create your environment file
+
+Copy `.env.example` to `.env` and fill in the required values:
+
+```bash
+cp .env.example .env
+```
+
+Required for local boot:
+
+- `DATABASE_URL`
+- `SESSION_SECRET`
+- `ENCRYPTION_KEY`
+
+Notes:
+
+- `DATABASE_URL` must point to an existing PostgreSQL database.
+- `SESSION_SECRET` is the session signing secret used by `src/lib/session.ts`.
+- `ENCRYPTION_KEY` must be a 64-character hex string for AES-256-GCM encryption.
+
+### 3. Create the database
+
+Create the Postgres database referenced by `DATABASE_URL`.
+
+Example:
+
+```sql
+CREATE DATABASE ezhan;
+```
+
+### 4. Apply the schema
+
+Push the Prisma schema to your database:
+
+```bash
+npx prisma db push
+```
+
+If you prefer migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+### 5. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Troubleshooting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Sign up or login returns a database configuration error
 
-## Learn More
+If auth returns an error like:
 
-To learn more about Next.js, take a look at the following resources:
+```text
+Database is not configured correctly. Check DATABASE_URL and run database setup.
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+verify that:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `DATABASE_URL` points to a real database
+- PostgreSQL is running
+- you have already run `npx prisma db push`
 
-## Deploy on Vercel
+### `SESSION_SECRET is not set`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set `SESSION_SECRET` in `.env` and restart the dev server.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### `ENCRYPTION_KEY` problems
+
+Use a 64-character hex string. Example generation command:
+
+```bash
+openssl rand -hex 32
+```
+
+## Useful commands
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npx prisma generate
+npx prisma studio
+```
